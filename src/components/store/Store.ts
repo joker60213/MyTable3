@@ -7,5 +7,11 @@ const store = configureStore ({
     },
 });
 
+// Тип состояния Redux
+export type RootState = ReturnType<typeof store.getState>;
+
+// Тип диспетчера Redux
+export type AppDispatch = typeof store.dispatch;
+
 export default store;
 //создал стор

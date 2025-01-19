@@ -3,14 +3,17 @@ import { useSelector, useDispatch } from "react-redux";
 import { Table, Input, Typography } from "antd";
 import { fetchPosts } from "../store/PostsSlice";
 import debounce from "lodash.debounce";
+import { Post } from "../../Types/Post";
+import { RootState, AppDispatch } from "../store/Store";
+import { TableProps } from "antd";
 
-const PostsTable = () => {
-  const dispatch = useDispatch();
+const PostsTable: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
 
   // Данные из Redux
-  const { items, status, error } = useSelector((state) => state.posts);
+  const { items, status, error } = useSelector((state: RootState) => state.posts);
 
-  const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState<Post[]>([]);
 
   // Загружаем данные при монтировании
   useEffect(() => {
@@ -25,8 +28,9 @@ const PostsTable = () => {
   }, [items]);
 
   // Дебаунс для поиска по ID
-  const handleInputChange = useMemo (() => 
-    debounce((value) => {
+  const handleInputChange = useMemo (
+    () => 
+    debounce((value: string) => {
         setFilteredData(
             items.filter((post) =>
                 value ? post.id === parseInt(value, 10) : true
@@ -34,9 +38,9 @@ const PostsTable = () => {
         }, 400),[items]);
 
   // Обработчик фильтров для таблицы
-  const handleTableChange = (_, filters) => {
-    const idFilter = filters?.id;
-
+  const handleTableChange: TableProps<Post>["onChange"] = (_, filters) => {
+    const idFilter = filters?.id as string[];
+  
     if (!idFilter) {
       // Если фильтры сброшены, возвращаем оригинальные данные
       setFilteredData(items);
@@ -65,13 +69,13 @@ const PostsTable = () => {
       title: "Оглавление",
       dataIndex: "title",
       key: "title",
-      sorter: (a, b) => a.title.localeCompare(b.title),
+      sorter: (a: Post, b: Post) => a.title.localeCompare(b.title),
     },
     {
       title: "Описание",
       dataIndex: "body",
       key: "body",
-      render: (text) => <Typography.Text copyable>{text}</Typography.Text>,
+      render: (text: string) => <Typography.Text copyable>{text}</Typography.Text>,
     },
   ];
 
