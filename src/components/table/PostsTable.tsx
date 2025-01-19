@@ -1,51 +1,46 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Table, Input, Typography } from "antd";
+import { Table, Input, Typography, TableProps } from "antd";
 import { fetchPosts } from "../store/PostsSlice";
 import debounce from "lodash.debounce";
-import { Post } from "../../Types/Post";
+import { Post } from "../../types/Post";
 import { RootState, AppDispatch } from "../store/Store";
-import { TableProps } from "antd";
 
 const PostsTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  // Данные из Redux
   const { items, status, error } = useSelector((state: RootState) => state.posts);
 
   const [filteredData, setFilteredData] = useState<Post[]>([]);
 
-  // Загружаем данные при монтировании
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchPosts());
     }
   }, [dispatch, status]);
 
-  // Обновляем `filteredData` при изменении `items`
   useEffect(() => {
     setFilteredData(items);
   }, [items]);
 
-  // Дебаунс для поиска по ID
-  const handleInputChange = useMemo (
-    () => 
-    debounce((value: string) => {
+  const handleInputChange = useMemo(
+    () =>
+      debounce((value: string) => {
         setFilteredData(
-            items.filter((post) =>
-                value ? post.id === parseInt(value, 10) : true
-            ));
-        }, 400),[items]);
+          items.filter((post) =>
+            value ? post.id === parseInt(value, 10) : true
+          )
+        );
+      }, 400),
+    [items]
+  );
 
-  // Обработчик фильтров для таблицы
   const handleTableChange: TableProps<Post>["onChange"] = (_, filters) => {
     const idFilter = filters?.id as string[];
-  
+
     if (!idFilter) {
-      // Если фильтры сброшены, возвращаем оригинальные данные
       setFilteredData(items);
     } else {
-      // Фильтрация по диапазону
       const [min, max] = idFilter[0].split("-").map(Number);
       setFilteredData(
         items.filter((post) => post.id >= min && post.id <= max)
@@ -53,18 +48,8 @@ const PostsTable: React.FC = () => {
     }
   };
 
-  // Колонки таблицы
-  const columns = [
-    {
-      title: "№",
-      dataIndex: "id",
-      key: "id",
-      filters: [
-        { text: "1-10", value: "1-10" },
-        { text: "11-20", value: "11-20" },
-        { text: "21-30", value: "21-30" },
-      ],
-    },
+  const columns: TableProps<Post>["columns"] = [
+    { title: "№", dataIndex: "id", key: "id" },
     {
       title: "Оглавление",
       dataIndex: "title",
